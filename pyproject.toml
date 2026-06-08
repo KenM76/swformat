@@ -1,0 +1,126 @@
+[build-system]
+requires = ["hatchling>=1.21"]
+build-backend = "hatchling.build"
+
+[project]
+name = "swformat"
+version = "0.0.1"
+description = "Pure-Python Partial I/O for SOLIDWORKS native file formats. Independent interoperability project (Apache-2.0)."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Claude (Anthropic)" },
+]
+maintainers = [
+    { name = "KenM76" },
+]
+keywords = ["solidworks", "sldprt", "sldasm", "slddrw", "cad", "file-format", "reverse-engineering"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    # The pure-Python read/modify/write library is OS-independent (no SOLIDWORKS,
+    # no COM). Only the optional Layer-3 live-SOLIDWORKS verification needs Windows.
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+# Runtime: zero third-party dependencies. zlib and struct are stdlib.
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "hypothesis>=6.0",
+    "ruff>=0.6",
+    "mypy>=1.10",
+]
+fuzz = [
+    "atheris>=2.3; platform_system != 'Windows'",   # atheris is Linux/macOS only
+    "hypothesis>=6.0",
+]
+
+[project.scripts]
+# Working today (no SOLIDWORKS required)
+swf-dump-streams = "swformat.tools.dump_streams:main"   # M0 — explode a file's streams to a dir
+swf-diff-files   = "swformat.tools.diff_files:main"     # M0 — 3-layer diff of two files
+swf-echo-check   = "swformat.tools.echo_check:main"     # M1 — read->write->diff self-consistency
+swf-prop         = "swformat.tools.sw_prop:main"        # M2 — custom-property list/get/set/delete/cutlist
+# Placeholders (resolve + print a clear "not yet implemented" status, exit 2)
+swf-configs      = "swformat.tools.sw_configs:main"     # M3 — configuration manager (stub)
+swf-sheets       = "swformat.tools.sw_sheets:main"      # M4 — drawing sheet ops (stub)
+swf-sketch       = "swformat.tools.sw_sketch:main"      # M5.3 — drawing sketch-geometry reader (line/circle/arc)
+swf-refs         = "swformat.tools.sw_refs:main"        # drawing -> referenced models (real-file capable)
+swf-tables       = "swformat.tools.sw_tables:main"      # drawing tables: BOM / Revision rows (real-file capable)
+swf-notes        = "swformat.tools.sw_notes:main"       # drawing text annotations / title-block notes (real-file capable)
+swf-meta         = "swformat.tools.sw_meta:main"        # one-call drawing metadata bundle -> JSON (real-file capable)
+swf-views        = "swformat.tools.sw_views:main"       # per-view model/sheet inventory (real-file capable)
+swf-dims         = "swformat.tools.sw_dims:main"        # displayed dimension values via KeyWords (real-file capable)
+swf-keywords     = "swformat.tools.sw_keywords:main"    # full searchable entity index (real-file capable)
+
+[project.urls]
+"Homepage" = "https://github.com/OWNER/SWFormat"
+"Issues" = "https://github.com/OWNER/SWFormat/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/swformat"]
+
+[tool.pytest.ini_options]
+testpaths = ["test/harness"]
+python_files = ["test_*.py", "*_test.py"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+]
+markers = [
+    "layer1: chunk-walker correctness tests",
+    "layer2: byte-equality-under-mask tests (diagnostic)",
+    "layer3: SOLIDWORKS equivalence on reopen (requires SW + combridge)",
+    "quarantine: known-failing files, skipped by default",
+    "slow: tests >5 sec",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+# The imported snapshot is preserved verbatim as the historical reference
+# (also excluded from mypy below) — not linted.
+extend-exclude = ["src/swformat/_imported_swx_reader_v0.py"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "UP",   # pyupgrade
+    "RUF",  # ruff-specific
+]
+ignore = [
+    "E501",     # line-length handled by formatter
+    # The docs deliberately use rich Unicode (em dashes, → arrows, ×, …) for
+    # readability — this is an explicit documentation-quality choice, not a typo.
+    "RUF002",   # ambiguous unicode char in docstring
+    "RUF003",   # ambiguous unicode char in comment
+]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+# Stubs for M5+ namespaces are intentionally minimal
+exclude = [
+    "^src/swformat/carchive/.*$",
+    "^src/swformat/synth/.*$",
+    "^src/swformat/_imported_swx_reader_v0\\.py$",   # the imported snapshot is preserved verbatim
+]
+
+[[tool.mypy.overrides]]
+module = "swformat.api.*"
+disallow_untyped_defs = false   # M2+ work; relax until handlers land
