@@ -41,6 +41,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+from swformat.compat import warn_streams
 from swformat.io.reader import read_document
 
 _STREAM = "swXmlContents/COMPINSTANCETREE"
@@ -115,6 +116,7 @@ def read_component_tree(path: str | Path) -> list[Component]:
     across a mixed corpus).
     """
     streams = read_document(path).streams()
+    warn_streams(streams)
     return parse_component_tree(streams.get(_STREAM, b""))
 
 
@@ -162,4 +164,5 @@ def parse_part_config_tree(xml: bytes | str) -> PartInfo:
 def read_part_config_tree(path: str | Path) -> PartInfo:
     """Read a part's identity + configuration list (``.SLDPRT``)."""
     streams = read_document(path).streams()
+    warn_streams(streams)
     return parse_part_config_tree(streams.get(_PART_STREAM, b""))

@@ -22,6 +22,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+from swformat.compat import warn_streams
 from swformat.io.reader import read_document
 
 _CORE = "docProps/core.xml"
@@ -78,4 +79,5 @@ def parse_metadata(core_xml: bytes | str = b"", app_xml: bytes | str = b"") -> D
 def read_doc_metadata(path: str | Path) -> DocMetadata:
     """Read document metadata (core.xml + app.xml) from any SOLIDWORKS file."""
     streams = read_document(path).streams()
+    warn_streams(streams)
     return parse_metadata(streams.get(_CORE, b""), streams.get(_APP, b""))

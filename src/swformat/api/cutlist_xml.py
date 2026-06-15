@@ -30,6 +30,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from swformat.compat import warn_streams
 from swformat.io.reader import read_document
 
 _STREAM_RE = re.compile(r"docProps/Config-\d+-Cutlist-Properties\.xml$", re.IGNORECASE)
@@ -87,6 +88,7 @@ def parse_cutlist(xml: bytes | str) -> list[CutlistItem]:
 def read_cutlist_xml(path: str | Path) -> list[CutlistItem]:
     """Read cut-list items across all Config-N-Cutlist-Properties.xml streams."""
     streams = read_document(path).streams()
+    warn_streams(streams)
     out: list[CutlistItem] = []
     for name in sorted(streams):
         if _STREAM_RE.search(name):

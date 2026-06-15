@@ -205,7 +205,9 @@ writeable verbatim, even if unknown — flows from Layer 0 through every
 layer, enabling the lazy round-trip strategy that makes M1 tractable.
 
 See `docs/ARCHITECTURE.md` for the full data flow and per-layer
-contracts.
+contracts, and `docs/COMPATIBILITY.md` for the SOLIDWORKS-version
+support envelope (what's tested, what's inferred, and the `swf-version`
+gate that flags files outside it).
 
 ## Project structure
 

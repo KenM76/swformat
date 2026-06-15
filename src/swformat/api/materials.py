@@ -28,6 +28,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from swformat.compat import warn_streams
 from swformat.io.reader import read_document
 
 _STREAM = "swXmlContents/MATERIALTREE"
@@ -84,4 +85,5 @@ def parse_materials(xml: bytes | str) -> list[Material]:
 def read_materials(path: str | Path) -> list[Material]:
     """Read applied material(s) + physical properties from a SOLIDWORKS file."""
     streams = read_document(path).streams()
+    warn_streams(streams)
     return parse_materials(streams.get(_STREAM, b""))

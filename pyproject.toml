@@ -63,6 +63,7 @@ swf-comptree     = "swformat.tools.sw_comptree:main"    # assembly component tre
 swf-docinfo      = "swformat.tools.sw_docinfo:main"     # document metadata (author/dates/revision/SW build/template) from core.xml+app.xml — real-file capable
 swf-material     = "swformat.tools.sw_material:main"    # applied material(s) + physical properties from MATERIALTREE — real-file capable
 swf-cutlist      = "swformat.tools.sw_cutlist:main"     # weldment cut-list items + props + exclude-from-cutlist from Config-N-Cutlist-Properties.xml — real-file capable
+swf-version      = "swformat.tools.sw_version:main"     # report internal format version + tested-envelope status (compat telemetry)
 
 [project.urls]
 "Homepage" = "https://github.com/OWNER/SWFormat"

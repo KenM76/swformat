@@ -138,3 +138,27 @@ def test_cutlist_xml() -> None:
     assert a.properties["MATERIAL"] == "Plain Carbon Steel" and a.properties["LENGTH"] == "250"
     assert b.exclude_from_cutlist is True and b.quantity == "2"
     assert parse_cutlist(b"") == []
+
+
+def test_compat_version_status_and_warning() -> None:
+    import warnings
+
+    from swformat.compat import (
+        UntestedVersionWarning,
+        version_status,
+        warn_if_untested,
+        warn_streams,
+    )
+    assert version_status(19000) == "tested"
+    assert version_status(None) == "unsupported"
+    assert version_status(13000) == "untested-modern"
+    assert version_status(25000) == "untested-newer"
+    # tested -> no warning; untested -> UntestedVersionWarning
+    with warnings.catch_warnings(record=True) as rec:
+        warnings.simplefilter("always")
+        warn_if_untested(19000)
+        assert rec == []
+        warn_if_untested(25000)
+        assert any(issubclass(w.category, UntestedVersionWarning) for w in rec)
+    # warn_streams derives version from the _MO_VERSION_* stream name
+    assert warn_streams({"_MO_VERSION_19000/Biography": b"", "x": b""}) == 19000

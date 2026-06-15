@@ -468,6 +468,11 @@ Two writer entry points (`swformat.io.writer`):
   §3.5). This is what M2 property edits use. For an unmodified document it
   is identical to `serialize` (it detects "nothing modified" and skips).
 
+> **Version compatibility** — for the SOLIDWORKS-version support envelope (the
+> tested set `{11000, 15000, 19000}`, the ~2015 OLE2 floor, the layer-by-layer
+> backward/forward assessment, and the `swformat.compat` / `swf-version` gate that
+> flags untested-version reads), see `docs/COMPATIBILITY.md`.
+
 ## 5. Non-determinism boundaries
 
 The M0.5 twin-save experiment (✓ done 2026-06-08;
