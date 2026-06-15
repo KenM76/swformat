@@ -62,6 +62,7 @@ swf-keywords     = "swformat.tools.sw_keywords:main"    # full searchable entity
 swf-comptree     = "swformat.tools.sw_comptree:main"    # assembly component tree + per-component state (exclude-from-BOM/flexible/hidden/...) — real-file capable
 swf-docinfo      = "swformat.tools.sw_docinfo:main"     # document metadata (author/dates/revision/SW build/template) from core.xml+app.xml — real-file capable
 swf-material     = "swformat.tools.sw_material:main"    # applied material(s) + physical properties from MATERIALTREE — real-file capable
+swf-cutlist      = "swformat.tools.sw_cutlist:main"     # weldment cut-list items + props + exclude-from-cutlist from Config-N-Cutlist-Properties.xml — real-file capable
 
 [project.urls]
 "Homepage" = "https://github.com/OWNER/SWFormat"

@@ -11,7 +11,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from swformat.api.components import parse_component_tree  # noqa: E402
+from swformat.api.components import (  # noqa: E402
+    parse_component_tree,
+    parse_part_config_tree,
+)
+from swformat.api.cutlist_xml import parse_cutlist  # noqa: E402
 from swformat.api.docprops import parse_metadata  # noqa: E402
 from swformat.api.materials import parse_materials  # noqa: E402
 
@@ -21,7 +25,7 @@ def test_component_tree_flags_and_path_join() -> None:
         '<swSolidWorks>'
         '<swFile id="3" swDocType="PART" swPath="C:\\a\\arm.SLDPRT"/>'
         '<swFile id="5" swDocType="PART" swPath="C:\\a\\base.SLDPRT"/>'
-        '<swModel id="8" swFileRef="3"/>'
+        '<swModel id="8" swFileRef="3" swBoundingBox="0 0 0 0.1 0.2 0.3"/>'
         '<swModel id="9" swFileRef="5"/>'
         '<swReference swComponentName="arm" swConfigurationName="Default" '
         ' swExcludeFromBOM="YES" swFlexible="NO" swHidden="NO" swSuppressed="NO" '
@@ -37,6 +41,7 @@ def test_component_tree_flags_and_path_join() -> None:
     assert arm.exclude_from_bom is True and arm.flexible is False
     assert arm.path == "C:\\a\\arm.SLDPRT"          # swModelRef 8 -> file 3 -> path
     assert arm.transform == "1 0 0"
+    assert arm.bounding_box == "0 0 0 0.1 0.2 0.3"   # via swModelRef 8 -> swModel.swBoundingBox
     assert base.exclude_from_bom is False and base.flexible is True
     assert base.path == "C:\\a\\base.SLDPRT"        # swModelRef 9 -> file 5 -> path
     # bytes input + empty input
@@ -90,3 +95,46 @@ def test_materials_utf16_and_properties() -> None:
     assert mat.properties["EX"].startswith("210000000000")
     assert "SIGYLD" in mat.properties
     assert parse_materials(b"") == []
+
+
+def test_part_config_tree() -> None:
+    xml = (
+        '<swSolidWorks swObjCount="3">'
+        '<swHeader><swFile id="3" swDocType="PART" swCreationTime="1559849301" '
+        ' swPath="C:\\p\\widget.SLDPRT"/></swHeader>'
+        '<swModelList><swModel id="2" swName="widget" swConfigurationName="Default" '
+        ' swFileRef="3"/></swModelList>'
+        '<swConfigurationList>'
+        '<swConfiguration swName="Default" swID="0" swMostRecentConfiguration="NO"/>'
+        '<swConfiguration swName="Heavy" swID="1" swMostRecentConfiguration="YES"/>'
+        '</swConfigurationList></swSolidWorks>'
+    )
+    info = parse_part_config_tree(xml)
+    assert info.path == "C:\\p\\widget.SLDPRT"
+    assert info.doc_type == "PART" and info.creation_time == "1559849301"
+    assert info.configs == ["Default", "Heavy"]
+    assert info.most_recent_config == "Heavy"
+
+
+def test_cutlist_xml() -> None:
+    xml = (
+        '<Configuration id="0" Name="Default">'
+        '<Feature Name="Cut-List-Item1" Type="Cut-List-Item" id="95">'
+        '<CustomProperty Name="MATERIAL" Type="Text">Plain Carbon Steel</CustomProperty>'
+        '<CustomProperty Name="LENGTH" Type="Text">250</CustomProperty>'
+        '<Quantity id="">4</Quantity>'
+        '<ExcludeFromCutlist id="">FALSE</ExcludeFromCutlist>'
+        '<CutlistType id="">1</CutlistType></Feature>'
+        '<Feature Name="Cut-List-Item2" Type="Cut-List-Item" id="96">'
+        '<Quantity id="">2</Quantity>'
+        '<ExcludeFromCutlist id="">TRUE</ExcludeFromCutlist>'
+        '<CutlistType id="">1</CutlistType></Feature>'
+        '</Configuration>'
+    )
+    items = parse_cutlist(xml)
+    assert [i.feature_name for i in items] == ["Cut-List-Item1", "Cut-List-Item2"]
+    a, b = items
+    assert a.config == "Default" and a.quantity == "4" and a.exclude_from_cutlist is False
+    assert a.properties["MATERIAL"] == "Plain Carbon Steel" and a.properties["LENGTH"] == "250"
+    assert b.exclude_from_cutlist is True and b.quantity == "2"
+    assert parse_cutlist(b"") == []

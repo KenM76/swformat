@@ -22,7 +22,7 @@ import sys
 from dataclasses import asdict
 from pathlib import Path
 
-from swformat.api.components import read_component_tree
+from swformat.api.components import read_component_tree, read_part_config_tree
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -37,6 +37,17 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     comps = read_component_tree(args.file)
+    if not comps and not args.excluded:
+        # Not an assembly (no <swReference> components) — show the PART config tree.
+        info = read_part_config_tree(args.file)
+        if info.configs or info.path:
+            if args.json:
+                print(json.dumps(asdict(info), indent=2))
+            else:
+                print(f"PART  {info.path or ''}  (created {info.creation_time})")
+                print(f"configs ({len(info.configs)}): {', '.join(info.configs)}"
+                      f"  [active: {info.most_recent_config}]")
+            return 0
     if args.excluded:
         comps = [c for c in comps if c.exclude_from_bom]
     if args.json:
