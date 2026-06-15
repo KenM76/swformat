@@ -5,15 +5,12 @@ build-backend = "hatchling.build"
 [project]
 name = "swformat"
 version = "0.0.1"
-description = "Pure-Python Partial I/O for SOLIDWORKS native file formats. Independent interoperability project (Apache-2.0)."
+description = "Pure-Python read/modify/write for SOLIDWORKS native file formats, without SOLIDWORKS installed."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }
 authors = [
-    { name = "Claude (Anthropic)" },
-]
-maintainers = [
-    { name = "KenM76" },
+    { name = "The SWFormat Authors" },
 ]
 keywords = ["solidworks", "sldprt", "sldasm", "slddrw", "cad", "file-format", "reverse-engineering"]
 classifiers = [
@@ -62,6 +59,9 @@ swf-meta         = "swformat.tools.sw_meta:main"        # one-call drawing metad
 swf-views        = "swformat.tools.sw_views:main"       # per-view model/sheet inventory (real-file capable)
 swf-dims         = "swformat.tools.sw_dims:main"        # displayed dimension values via KeyWords (real-file capable)
 swf-keywords     = "swformat.tools.sw_keywords:main"    # full searchable entity index (real-file capable)
+swf-comptree     = "swformat.tools.sw_comptree:main"    # assembly component tree + per-component state (exclude-from-BOM/flexible/hidden/...) — real-file capable
+swf-docinfo      = "swformat.tools.sw_docinfo:main"     # document metadata (author/dates/revision/SW build/template) from core.xml+app.xml — real-file capable
+swf-material     = "swformat.tools.sw_material:main"    # applied material(s) + physical properties from MATERIALTREE — real-file capable
 
 [project.urls]
 "Homepage" = "https://github.com/OWNER/SWFormat"
